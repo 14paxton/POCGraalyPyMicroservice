@@ -1,0 +1,11 @@
+---
+micronaut:
+  server:
+    port: 8181
+  application:
+    name: nameplate-data-logger
+
+jvm:
+  systemProperty:
+    polyglot.log.file: logs/graalpy.log
+    polyglot.engine.WarnVirtualThreadSupport: false
