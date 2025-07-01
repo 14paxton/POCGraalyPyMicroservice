@@ -26,66 +26,11 @@ val numpyConfig = when {
     else -> PackageConfig("", "numpy==1.26.4")
 }
 
-val pillowConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/pillow-11.1.0-graalpy311-graalpy242_311_native-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
-            "pillow<=11.2.1"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/pillow-11.1.0-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "pillow<=11.2.1"
-                                       )
-
-    else -> PackageConfig("", "pillow<=11.2.1")
-}
-
-val shapelyConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/shapely-2.1.1-graalpy311-graalpy242_311_native-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
-            "shapely==2.0.0"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/shapely-2.1.1-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "shapely==2.0.0"
-                                       )
-
-    else -> PackageConfig("", "shapely==2.0.0")
-}
-
-val cythonConfig = PackageConfig(
-        "${rootDir}/python-resources/any/Cython-3.0.11-py2.py3-none-any.whl", "cython==0.29.37"
-                                )
-
-val mesonPythonConfig = PackageConfig(
-        "${rootDir}/python-resources/any/meson_python-0.16.0-py3-none-any.whl", "meson-python<= 0.16.0"
-                                     )
-
-val paddleOcrConfig = PackageConfig(
-        "${rootDir}/python-resources/any/paddleocr-3.1.0-py3-none-any.whl", "paddleocr==2.7.0.3"
-                                   )
-
-val sciKitImageConfig = PackageConfig(
-        "${rootDir}/python-resources/MacOS/scikit_image-0.25.0-cp312-cp312-macosx_15_0_arm64.whl", "scikit-image==0.25.0"
-                                     )
-
-val pandasConfig = PackageConfig(
-        "${rootDir}/python-resources/MacOS/pandas-2.2.3-cp312-cp312-macosx_15_0_arm64.whl", "pandas==2.2.2"
-                                )
-
 fun createFileInstall(path: String, fallback: String): String {
     return if (path.isNotEmpty()) "file://${file(path).absolutePath}" else fallback
 }
 
 val numpyInstall = createFileInstall(numpyConfig.path, numpyConfig.fallback)
-val pillowInstall = createFileInstall(pillowConfig.path, pillowConfig.fallback)
-val shapelyInstall = createFileInstall(shapelyConfig.path, shapelyConfig.fallback)
-val cythonInstall = createFileInstall(cythonConfig.path, cythonConfig.fallback)
-val mesonPythonInstall = createFileInstall(mesonPythonConfig.path, mesonPythonConfig.fallback)
-val paddleOcrInstall = createFileInstall(paddleOcrConfig.path, paddleOcrConfig.fallback)
-val sciKitImageInstall = createFileInstall(sciKitImageConfig.path, sciKitImageConfig.fallback)
-val pandasInstall = createFileInstall(pandasConfig.path, pandasConfig.fallback)
 
 plugins {
     id("io.micronaut.application") version "4.5.3"
@@ -103,6 +48,7 @@ plugins {
 
 graalPy {
 
+    // leave comments
     // resourceDirectory.set("GRAALPY-VFS/com/nameplate/nameplate-data-logger")
     //    resourceDirectory.set("GRAALPY-VFS/com/nameplate")
     // resourceDirectory.set("org.graalvm.python.vfs")
@@ -111,24 +57,16 @@ graalPy {
     packages.set(
             setOf(
                     "--prefer-binary",
+                    "--no-deps",
                     wheelOsStandard,
-                    // sciKitImageInstall,
-                    cythonInstall,
-                    mesonPythonInstall,
+                    // "numpy==2.2.4",
                     numpyInstall,
-                    pillowInstall,
-                    shapelyInstall,
-                    "scikit_build_core==0.11.1",
                     "python-dotenv==0.21.0",
-                    "tqdm==4.66.4",
-                    "networkx==2.8.8",
-                    "imageio==2.22.4",
-                    "tifffile==2022.10.10",
-                    "packaging==24.1",
-                    pandasInstall
-                    // "pandas==2.2.2",
-                    // "paddleocr<=3.1.0"
-                    // paddleOcrInstall
+                    "tqdm",
+                    "pyyaml==6.0.0",
+                    "pillow",
+                    // "paddlepaddle",
+                    "paddleocr==2.7.0.3"
 
                     // leave comments
                     //            "--prefer-binary",
