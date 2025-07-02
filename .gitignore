@@ -29,6 +29,7 @@ wheels/
 !requirements.txt
 !package.json
 vfs-output
+.venv
 
 # IDE
 logs

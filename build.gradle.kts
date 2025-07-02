@@ -33,7 +33,7 @@ fun createFileInstall(path: String, fallback: String): String {
 val numpyInstall = createFileInstall(numpyConfig.path, numpyConfig.fallback)
 
 plugins {
-    id("io.micronaut.application") version "4.5.3"
+    id("io.micronaut.application") version "4.5.4"
     id("org.graalvm.python") version "24.2.1"
     id("com.gradleup.shadow") version "8.3.6"
     id("io.micronaut.aot") version "4.5.3"
@@ -95,9 +95,11 @@ repositories {
 dependencies {
     compileOnly("io.micronaut:micronaut-http-client")
 
+    implementation("org.graalvm.polyglot:polyglot:24.2.1")
+    implementation("org.graalvm.polyglot:python:24.2.1")
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("io.micronaut.graal-languages:micronaut-graalpy:1.2.0")
+    implementation("io.micronaut.graal-languages:micronaut-graalpy")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
 
     runtimeOnly("org.yaml:snakeyaml")
@@ -115,12 +117,6 @@ dependencies {
 
 application {
     mainClass.set("com.nameplate.Application")
-    applicationDefaultJvmArgs = listOf(
-            "-Dpolyglot.engine.WarnInterpreterOnly=false",
-            "-Dpolyglot.log.file=Log/truffle.log",
-            "--enable-native-access=org.graalvm.truffle",
-            "-Dpolyglot.engine.WarnVirtualThreadSupport=false"
-                                      )
 }
 
 java {
@@ -143,7 +139,9 @@ micronaut {
     aot {
         configFile = file("gradle/micronaut-aot.properties")
     }
-} // END Micronaut ***********************************************************************************************************
+}
+
+// END Micronaut ***********************************************************************************************************
 // *************************************************************************************************************************
 
 
@@ -179,7 +177,9 @@ graalvmNative {
             })
         }
     }
-} // END GraalVM options ****************************************************************************************************
+}
+
+// END GraalVM options ****************************************************************************************************
 // *************************************************************************************************************************
 
 
@@ -191,7 +191,9 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfi
     graalImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
     baseImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
     exposedPorts.set(setOf(8181))
-} // END Dockerfile.graalpy-vfs **********************************************************************************************************
+}
+
+// END Dockerfile.graalpy-vfs **********************************************************************************************************
 // *************************************************************************************************************************
 
 

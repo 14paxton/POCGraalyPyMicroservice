@@ -9,3 +9,7 @@ jvm:
   systemProperty:
     polyglot.log.file: logs/graalpy.log
     polyglot.engine.WarnVirtualThreadSupport: false
+    # GraalPy Python path configuration
+    python.path: "org.graalvm.python.vfs/src"
+    python.venv: "org.graalvm.python.vfs/venv"
+    python.executable: "org.graalvm.python.vfs/venv/bin/python"
