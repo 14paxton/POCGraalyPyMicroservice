@@ -189,35 +189,39 @@ tasks.named("graalPyResources") {
 
 // This explicitly tells Gradle that processResources and processTestResources tasks depend on the graalPyResources task, ensuring proper task ordering.
 
-/* tasks.named("processResources") {
-dependsOn("graalPyResources")
-}
-tasks.named("processTestResources") {
-dependsOn("graalPyResources")
-}
+// tasks.named("processResources") {
+//     dependsOn("graalPyResources")
+// }
+// tasks.named("processTestResources") {
+//     dependsOn("graalPyResources")
+// }
+//
+// tasks.named("test") {
+//     dependsOn("graalPyResources")
+// }
 
-tasks.named("test") {
-dependsOn("graalPyResources")
-}*/
 
 // This tells Gradle to include duplicate resources rather than failing the build when it encounters them.
 
-/* tasks.withType<ProcessResources> {
-duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
+// tasks.withType<ProcessResources> {
+//     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+// }
+//
+// sourceSets {
+//     main {
+//         resources {
+//             // Make sure main resources include the custom GraalPy VFS
+//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
+//         }
+//     }
+//     test {
+//         resources {
+//             // And your tests include it too
+//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
+//         }
+//     }
+// }
 
-sourceSets {
-main {
-resources {
-srcDir("org.graalvm.python.vfs")
-}
-}
-test {
-resources {
-srcDir("org.graalvm.python.vfs")
-}
-}
-}*/
 
 // END Python Resource Folder Management **********************************************************************************
 //*************************************************************************************************************************
