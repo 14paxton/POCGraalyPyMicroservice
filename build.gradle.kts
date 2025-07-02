@@ -1,36 +1,8 @@
-import org.gradle.internal.os.OperatingSystem.current
+import PipInstall.PackageName.NUMPY
+import PipInstall.getPackageBinary
+import PipInstall.wheelOsStandard
 
-val currentOS = current()
-
-val wheelOsStandard = when {
-    currentOS.isLinux -> "patchelf"
-    currentOS.isMacOsX -> "delocate"
-    currentOS.isWindows -> "delvewheel"
-    else -> "patchelf"
-}
-
-data class PackageConfig(val path: String, val fallback: String)
-
-val numpyConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/numpy-2.2.6-graalpy311-graalpy242_311_native-manylinux_2_27_aarch64" +
-                    ".manylinux_2_28_aarch64.whl",
-            "numpy==1.26.4"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/numpy-2.2.6-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "numpy==1.26.4"
-                                       )
-
-    else -> PackageConfig("", "numpy==1.26.4")
-}
-
-fun createFileInstall(path: String, fallback: String): String {
-    return if (path.isNotEmpty()) "file://${file(path).absolutePath}" else fallback
-}
-
-val numpyInstall = createFileInstall(numpyConfig.path, numpyConfig.fallback)
+val numpyInstall = getPackageBinary(rootDir, NUMPY)
 
 plugins {
     id("io.micronaut.application") version "4.5.4"
@@ -39,12 +11,8 @@ plugins {
     id("io.micronaut.aot") version "4.5.3"
 }
 
-/**************************************************************************************************************************
+// **************************************************************************************************************************
 // PYTHON LIBRARIES Import ***********************************************************************************************
- *************************************************************************************************************************
-- Python packages and their versions can be specified as if used with pip.
-- Install and pin the numpy package to version 1.26.4.
- ****************************************************************************************************************************/
 
 graalPy {
 
@@ -59,7 +27,6 @@ graalPy {
                     "--prefer-binary",
                     "--no-deps",
                     wheelOsStandard,
-                    // "numpy==2.2.4",
                     numpyInstall,
                     "python-dotenv==0.21.0",
                     "tqdm",
@@ -200,37 +167,57 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfi
 //*************************************************************************************************************************
 // Python Resource Folder Management **************************************************************************************
 
+tasks.register<Copy>("copyVenvResources") {
+    group = "python"
+    description = "Copies GraalPy venv resources from build directory to .venv"
+    dependsOn("graalPyResources")
+
+    from("build/generated/graalpy/resources/org.graalvm.python.vfs/venv") {
+        include("**/*")
+    }
+    into(layout.projectDirectory.dir(".venv"))
+
+    doLast {
+        println("Copied GraalPy venv resources to .venv directory")
+    }
+}
+
+tasks.named("graalPyResources") {
+    finalizedBy("copyVenvResources")
+}
+
+
 // This explicitly tells Gradle that processResources and processTestResources tasks depend on the graalPyResources task, ensuring proper task ordering.
 
 /* tasks.named("processResources") {
-     dependsOn("graalPyResources")
- }
- tasks.named("processTestResources") {
-     dependsOn("graalPyResources")
- }
+dependsOn("graalPyResources")
+}
+tasks.named("processTestResources") {
+dependsOn("graalPyResources")
+}
 
- tasks.named("test") {
-     dependsOn("graalPyResources")
- }*/
+tasks.named("test") {
+dependsOn("graalPyResources")
+}*/
 
 // This tells Gradle to include duplicate resources rather than failing the build when it encounters them.
 
 /* tasks.withType<ProcessResources> {
-     duplicatesStrategy = DuplicatesStrategy.INCLUDE
- }
+duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
 
- sourceSets {
-     main {
-         resources {
-             srcDir("org.graalvm.python.vfs")
-         }
-     }
-     test {
-         resources {
-             srcDir("org.graalvm.python.vfs")
-         }
-     }
- }*/
+sourceSets {
+main {
+resources {
+srcDir("org.graalvm.python.vfs")
+}
+}
+test {
+resources {
+srcDir("org.graalvm.python.vfs")
+}
+}
+}*/
 
 // END Python Resource Folder Management **********************************************************************************
 //*************************************************************************************************************************
