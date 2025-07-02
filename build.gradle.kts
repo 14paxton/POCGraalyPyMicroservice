@@ -1,8 +1,10 @@
 import PipInstall.PackageName.NUMPY
+import PipInstall.PackageName.PADDLEPADDLE
 import PipInstall.getPackageBinary
 import PipInstall.wheelOsStandard
 
 val numpyInstall = getPackageBinary(rootDir, NUMPY)
+val paddlePaddleInstall = getPackageBinary(rootDir, PADDLEPADDLE)
 
 plugins {
     id("io.micronaut.application") version "4.5.4"
@@ -32,7 +34,8 @@ graalPy {
                     "tqdm",
                     "pyyaml==6.0.0",
                     "pillow",
-                    // "paddlepaddle",
+                    // paddlePaddleInstall,
+                    "paddlepaddle==3.1.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/",
                     "paddleocr==2.7.0.3"
 
                     // leave comments

@@ -12,7 +12,8 @@ object PipInstall {
         SCIKITIMAGE("scikit-image==0.23.2"),
         PADDLEOCR("paddleocr==2.7.0.3"),
         MESONPYTHON("meson-python==0.16.0"),
-        CYTHON("cython==3.0.11")
+        CYTHON("cython==3.0.11"),
+        PADDLEPADDLE("paddlepaddle==3.0.0")
     }
 
     val wheelOsStandard: String = when {
@@ -73,6 +74,22 @@ object PipInstall {
         else -> PackageConfig("", PackageName.SHAPELY.fallback)
     }
 
+    private fun paddlePaddleConfig(rootDir: File): PackageConfig = when {
+        currentOS.isLinux -> PackageConfig(
+                File(
+                        rootDir,
+                        "python-resources/Linux/paddlepaddle-3.0.0-cp311-cp311-manylinux2014_aarch64.whl"
+                    ).absolutePath, PackageName.PADDLEPADDLE.fallback
+                                          )
+
+        currentOS.isMacOsX -> PackageConfig(
+                File(rootDir, "python-resources/MacOS/paddlepaddle-3.0.0-cp311-cp311-macosx_11_0_arm64.whl").absolutePath,
+                PackageName.PADDLEPADDLE.fallback
+                                           )
+
+        else -> PackageConfig("", PackageName.PADDLEPADDLE.fallback)
+    }
+
     private fun cythonConfig(rootDir: File): PackageConfig = PackageConfig(
             File(rootDir, "python-resources/any/Cython-3.0.11-py2.py3-none-any.whl").path, PackageName.CYTHON.fallback
                                                                           )
@@ -112,6 +129,7 @@ object PipInstall {
             PackageName.PADDLEOCR -> createFileInstall(paddleOcrConfig(rootDir))
             PackageName.MESONPYTHON -> createFileInstall(mesonPythonConfig(rootDir))
             PackageName.CYTHON -> createFileInstall(cythonConfig(rootDir))
+            PackageName.PADDLEPADDLE -> createFileInstall(paddlePaddleConfig(rootDir))
         }
     }
 }
