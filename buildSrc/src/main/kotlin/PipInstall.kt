@@ -1,19 +1,23 @@
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import java.io.File
+import java.io.FilenameFilter
+
+private const val MACOS_WHL_DIR = "python-resources/MacOS/"
 
 object PipInstall {
     private val currentOS = DefaultNativePlatform.getCurrentOperatingSystem()
 
     enum class PackageName(val fallback: String) {
-        NUMPY("numpy==1.26.4"),
-        PILLOW("pillow<=11.2.1"),
-        SHAPELY("shapely==2.0.4"),
-        PANDAS("pandas==2.2.2"),
-        SCIKITIMAGE("scikit-image==0.23.2"),
-        PADDLEOCR("paddleocr==2.7.0.3"),
-        MESONPYTHON("meson-python==0.16.0"),
-        CYTHON("cython==3.0.11"),
-        PADDLEPADDLE("paddlepaddle==3.0.0")
+        NUMPY("numpy==2.3.1"),
+        PILLOW("pillow==11.3.0"),
+        SHAPELY("shapely==2.1.1"),
+        PADDLEOCR("paddleocr==3.1.0"),
+        PADDLEPADDLE("paddlepaddle==3.1.0"),
+        PADDLEX("paddlex==3.1.1"),
+        SCIPY("scipy==1.16.1"),
+        PANDAS("pandas==2.3.0"),
+        SKITLEARN("scikit-learn==1.1.0"),
+        TIKTOKEN("tiktoken==0.9.0"),
     }
 
     val wheelOsStandard: String = when {
@@ -35,7 +39,7 @@ object PipInstall {
 
         currentOS.isMacOsX -> PackageConfig(
                 File(
-                        rootDir, "python-resources/MacOS/numpy-2.2.6-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl"
+                        rootDir, "python-resources/MacOS/numpy-2.3.1-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl"
                     ).absolutePath, PackageName.NUMPY.fallback
                                            )
 
@@ -51,7 +55,7 @@ object PipInstall {
                                           )
 
         currentOS.isMacOsX -> PackageConfig(
-                File(rootDir, "python-resources/MacOS/pillow-11.1.0-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl").absolutePath,
+                File(rootDir, "python-resources/MacOS/pillow-11.3.0-graalpy311-graalpy242_311_native-macosx_11_0_arm64.whl").absolutePath,
                 PackageName.PILLOW.fallback
                                            )
 
@@ -77,38 +81,50 @@ object PipInstall {
     private fun paddlePaddleConfig(rootDir: File): PackageConfig = when {
         currentOS.isLinux -> PackageConfig(
                 File(
-                        rootDir,
-                        "python-resources/Linux/paddlepaddle-3.0.0-cp311-cp311-manylinux2014_aarch64.whl"
+                        rootDir, "python-resources/Linux/paddlepaddle-3.0.0-graalpy311-graalpy242_311_native-manylinux2014_aarch64.whl"
                     ).absolutePath, PackageName.PADDLEPADDLE.fallback
                                           )
 
         currentOS.isMacOsX -> PackageConfig(
-                File(rootDir, "python-resources/MacOS/paddlepaddle-3.0.0-cp311-cp311-macosx_11_0_arm64.whl").absolutePath,
+                File(rootDir, "python-resources/MacOS/paddlepaddle-3.1.0-graalpy311-graalpy242_311_native-macosx_11_0_arm64.whl").absolutePath,
                 PackageName.PADDLEPADDLE.fallback
                                            )
 
         else -> PackageConfig("", PackageName.PADDLEPADDLE.fallback)
     }
 
-    private fun cythonConfig(rootDir: File): PackageConfig = PackageConfig(
-            File(rootDir, "python-resources/any/Cython-3.0.11-py2.py3-none-any.whl").path, PackageName.CYTHON.fallback
-                                                                          )
-
-    private fun mesonPythonConfig(rootDir: File): PackageConfig = PackageConfig(
-            File(rootDir, "python-resources/any/meson_python-0.16.0-py3-none-any.whl").path, PackageName.MESONPYTHON.fallback
-                                                                               )
-
     private fun paddleOcrConfig(rootDir: File): PackageConfig = PackageConfig(
-            File(rootDir, "python-resources/any/paddleocr-3.1.0-py3-none-any.whl").path, PackageName.PADDLEOCR.fallback
+            File(rootDir, "python-resources/any/paddleocr-3.1.0-py3-none-any.whl").path,
+            PackageName.PADDLEOCR.fallback
                                                                              )
 
-    private fun sciKitImageConfig(rootDir: File): PackageConfig = PackageConfig(
-            File(rootDir, "python-resources/MacOS/scikit_image-0.25.0-cp312-cp312-macosx_15_0_arm64.whl").path, PackageName.SCIKITIMAGE.fallback
-                                                                               )
+    private fun paddleXConfig(rootDir: File): PackageConfig = PackageConfig(
+            File(rootDir, "python-resources/any/paddlex-3.1.1-py3-none-any.whl").path,
+            PackageName.PADDLEOCR.fallback
+                                                                           )
+
+    private fun sciPyConfig(rootDir: File): PackageConfig = PackageConfig(
+            File(rootDir, "python-resources/MacOS/scipy-1.16.0-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl").path,
+            PackageName.SCIPY.fallback
+                                                                         )
 
     private fun pandasConfig(rootDir: File): PackageConfig = PackageConfig(
-            File(rootDir, "python-resources/Linux/pandas-2.2.3-cp39-cp39-manylinux_2_34_aarch64.whl").path, PackageName.PANDAS.fallback
+            File(rootDir, "python-resources/MacOS/pandas-2.3.0-graalpy311-graalpy242_311_native-macosx_11_0_arm64.whl").path,
+            PackageName.PANDAS.fallback
                                                                           )
+
+    private fun skitLearnConfig(rootDir: File): PackageConfig = PackageConfig(
+            File(rootDir, "python-resources/MacOS/scikit_learn-1.7.0-graalpy311-graalpy242_311_native-macosx_12_0_arm64.whl").path,
+            PackageName.SKITLEARN.fallback
+                                                                             )
+
+    private fun tikTokenConfig(rootDir: File): PackageConfig {
+        val dir = File(rootDir, MACOS_WHL_DIR)
+        val tikTokenFile = dir.listFiles(FilenameFilter { _, name -> name.startsWith("tiktoken") })
+            ?.firstOrNull()
+        val path = tikTokenFile?.absolutePath ?: ""
+        return PackageConfig(path, PackageName.TIKTOKEN.fallback)
+    }
 
     private fun createFileInstall(packageConfig: PackageConfig): String {
         val validPath = packageConfig.path.takeIf { it: String ->
@@ -124,12 +140,13 @@ object PipInstall {
             PackageName.NUMPY -> createFileInstall(numpyConfig(rootDir))
             PackageName.PILLOW -> createFileInstall(pillowConfig(rootDir))
             PackageName.SHAPELY -> createFileInstall(shapelyConfig(rootDir))
-            PackageName.PANDAS -> createFileInstall(pandasConfig(rootDir))
-            PackageName.SCIKITIMAGE -> createFileInstall(sciKitImageConfig(rootDir))
             PackageName.PADDLEOCR -> createFileInstall(paddleOcrConfig(rootDir))
-            PackageName.MESONPYTHON -> createFileInstall(mesonPythonConfig(rootDir))
-            PackageName.CYTHON -> createFileInstall(cythonConfig(rootDir))
             PackageName.PADDLEPADDLE -> createFileInstall(paddlePaddleConfig(rootDir))
+            PackageName.PADDLEX -> createFileInstall(paddleXConfig(rootDir))
+            PackageName.SCIPY -> createFileInstall(sciPyConfig(rootDir))
+            PackageName.PANDAS -> createFileInstall(pandasConfig(rootDir))
+            PackageName.SKITLEARN -> createFileInstall(skitLearnConfig(rootDir))
+            PackageName.TIKTOKEN -> createFileInstall(tikTokenConfig(rootDir))
         }
     }
 }

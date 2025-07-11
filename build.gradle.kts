@@ -1,10 +1,18 @@
-import PipInstall.PackageName.NUMPY
-import PipInstall.PackageName.PADDLEPADDLE
+import PipInstall.PackageName
+import PipInstall.PackageName.*
 import PipInstall.getPackageBinary
 import PipInstall.wheelOsStandard
 
 val numpyInstall = getPackageBinary(rootDir, NUMPY)
 val paddlePaddleInstall = getPackageBinary(rootDir, PADDLEPADDLE)
+val paddleOcrInstall = getPackageBinary(rootDir, PADDLEOCR)
+val paddleXInstall = getPackageBinary(rootDir, PADDLEX)
+val sciPyInstall = getPackageBinary(rootDir, SCIPY)
+val pandasInstall = getPackageBinary(rootDir, PANDAS)
+val skitLearnInstall = getPackageBinary(rootDir, SKITLEARN)
+val pillowInstall = getPackageBinary(rootDir, PILLOW)
+val shapelyInstall = getPackageBinary(rootDir, SHAPELY)
+val tikTokenInstall = getPackageBinary(rootDir, TIKTOKEN)
 
 plugins {
     id("io.micronaut.application") version "4.5.4"
@@ -17,36 +25,24 @@ plugins {
 // PYTHON LIBRARIES Import ***********************************************************************************************
 
 graalPy {
-
-    // leave comments
-    // resourceDirectory.set("GRAALPY-VFS/com/nameplate/nameplate-data-logger")
-    //    resourceDirectory.set("GRAALPY-VFS/com/nameplate")
-    // resourceDirectory.set("org.graalvm.python.vfs")
-    // externalDirectory.set(file("${rootDir}/python-resources"))
-    // packages.set(setOf("--only-binary=:all:", "--prefer-binary", "cython", "pygal", "vader-sentiment==3.2.1.1", "requests", "numpy==1.26.4", "delocate==0.13.0"))
     packages.set(
             setOf(
                     "--prefer-binary",
-                    "--no-deps",
                     wheelOsStandard,
                     numpyInstall,
-                    "python-dotenv==0.21.0",
-                    "tqdm",
-                    "pyyaml==6.0.0",
-                    "pillow",
-                    // paddlePaddleInstall,
-                    "paddlepaddle==3.1.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/",
-                    "paddleocr==2.7.0.3"
-
-                    // leave comments
-                    //            "--prefer-binary",
-                    //            "cython",
-                    //            "numpy==1.26.4",
-                    //            "python-dotenv>=0.21.0",
-                    //            "tqdm>=4.66.4",
-                    //            "pillow<=11.2.1",
-                    //            "paddlepaddle==3.0.0",
-                    //            "paddleocr==2.7.0.3", // Known working version with Python 3.9+ and minimal deps
+                    "python-dotenv==1.1.1",
+                    "tqdm==4.67.1",
+                    "PyYAML==6.0.2",
+                    "pydantic==2.11.7",
+                    tikTokenInstall,
+                    pillowInstall,
+                    shapelyInstall,
+                    skitLearnInstall,
+                    pandasInstall,
+                    sciPyInstall,
+                    paddlePaddleInstall,
+                    paddleOcrInstall,
+                    paddleXInstall,
                  )
                 )
 }
