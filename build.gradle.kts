@@ -1,144 +1,48 @@
-import org.gradle.internal.os.OperatingSystem.current
+import PipInstall.PackageName
+import PipInstall.PackageName.*
+import PipInstall.getPackageBinary
+import PipInstall.wheelOsStandard
 
-val currentOS = current()
-
-val wheelOsStandard = when {
-    currentOS.isLinux -> "patchelf"
-    currentOS.isMacOsX -> "delocate"
-    currentOS.isWindows -> "delvewheel"
-    else -> "patchelf"
-}
-
-data class PackageConfig(val path: String, val fallback: String)
-
-val numpyConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/numpy-2.2.6-graalpy311-graalpy242_311_native-manylinux_2_27_aarch64" +
-                    ".manylinux_2_28_aarch64.whl",
-            "numpy==1.26.4"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/numpy-2.2.6-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "numpy==1.26.4"
-                                       )
-
-    else -> PackageConfig("", "numpy==1.26.4")
-}
-
-val pillowConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/pillow-11.1.0-graalpy311-graalpy242_311_native-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
-            "pillow<=11.2.1"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/pillow-11.1.0-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "pillow<=11.2.1"
-                                       )
-
-    else -> PackageConfig("", "pillow<=11.2.1")
-}
-
-val shapelyConfig = when {
-    currentOS.isLinux -> PackageConfig(
-            "${rootDir}/python-resources/Linux/shapely-2.1.1-graalpy311-graalpy242_311_native-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
-            "shapely==2.0.0"
-                                      )
-
-    currentOS.isMacOsX -> PackageConfig(
-            "${rootDir}/python-resources/MacOS/shapely-2.1.1-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl",
-            "shapely==2.0.0"
-                                       )
-
-    else -> PackageConfig("", "shapely==2.0.0")
-}
-
-val cythonConfig = PackageConfig(
-        "${rootDir}/python-resources/any/Cython-3.0.11-py2.py3-none-any.whl", "cython==0.29.37"
-                                )
-
-val mesonPythonConfig = PackageConfig(
-        "${rootDir}/python-resources/any/meson_python-0.16.0-py3-none-any.whl", "meson-python<= 0.16.0"
-                                     )
-
-val paddleOcrConfig = PackageConfig(
-        "${rootDir}/python-resources/any/paddleocr-3.1.0-py3-none-any.whl", "paddleocr==2.7.0.3"
-                                   )
-
-val sciKitImageConfig = PackageConfig(
-        "${rootDir}/python-resources/MacOS/scikit_image-0.25.0-cp312-cp312-macosx_15_0_arm64.whl", "scikit-image==0.25.0"
-                                     )
-
-val pandasConfig = PackageConfig(
-        "${rootDir}/python-resources/MacOS/pandas-2.2.3-cp312-cp312-macosx_15_0_arm64.whl", "pandas==2.2.2"
-                                )
-
-fun createFileInstall(path: String, fallback: String): String {
-    return if (path.isNotEmpty()) "file://${file(path).absolutePath}" else fallback
-}
-
-val numpyInstall = createFileInstall(numpyConfig.path, numpyConfig.fallback)
-val pillowInstall = createFileInstall(pillowConfig.path, pillowConfig.fallback)
-val shapelyInstall = createFileInstall(shapelyConfig.path, shapelyConfig.fallback)
-val cythonInstall = createFileInstall(cythonConfig.path, cythonConfig.fallback)
-val mesonPythonInstall = createFileInstall(mesonPythonConfig.path, mesonPythonConfig.fallback)
-val paddleOcrInstall = createFileInstall(paddleOcrConfig.path, paddleOcrConfig.fallback)
-val sciKitImageInstall = createFileInstall(sciKitImageConfig.path, sciKitImageConfig.fallback)
-val pandasInstall = createFileInstall(pandasConfig.path, pandasConfig.fallback)
+val numpyInstall = getPackageBinary(rootDir, NUMPY)
+val paddlePaddleInstall = getPackageBinary(rootDir, PADDLEPADDLE)
+val paddleOcrInstall = getPackageBinary(rootDir, PADDLEOCR)
+val paddleXInstall = getPackageBinary(rootDir, PADDLEX)
+val sciPyInstall = getPackageBinary(rootDir, SCIPY)
+val pandasInstall = getPackageBinary(rootDir, PANDAS)
+val skitLearnInstall = getPackageBinary(rootDir, SKITLEARN)
+val pillowInstall = getPackageBinary(rootDir, PILLOW)
+val shapelyInstall = getPackageBinary(rootDir, SHAPELY)
+val tikTokenInstall = getPackageBinary(rootDir, TIKTOKEN)
 
 plugins {
-    id("io.micronaut.application") version "4.5.3"
+    id("io.micronaut.application") version "4.5.4"
     id("org.graalvm.python") version "24.2.1"
     id("com.gradleup.shadow") version "8.3.6"
     id("io.micronaut.aot") version "4.5.3"
 }
 
-/**************************************************************************************************************************
+// **************************************************************************************************************************
 // PYTHON LIBRARIES Import ***********************************************************************************************
- *************************************************************************************************************************
-- Python packages and their versions can be specified as if used with pip.
-- Install and pin the numpy package to version 1.26.4.
- ****************************************************************************************************************************/
 
 graalPy {
-
-    // resourceDirectory.set("GRAALPY-VFS/com/nameplate/nameplate-data-logger")
-    //    resourceDirectory.set("GRAALPY-VFS/com/nameplate")
-    // resourceDirectory.set("org.graalvm.python.vfs")
-    // externalDirectory.set(file("${rootDir}/python-resources"))
-    // packages.set(setOf("--only-binary=:all:", "--prefer-binary", "cython", "pygal", "vader-sentiment==3.2.1.1", "requests", "numpy==1.26.4", "delocate==0.13.0"))
     packages.set(
             setOf(
                     "--prefer-binary",
                     wheelOsStandard,
-                    // sciKitImageInstall,
-                    cythonInstall,
-                    mesonPythonInstall,
                     numpyInstall,
+                    "python-dotenv==1.1.1",
+                    "tqdm==4.67.1",
+                    "PyYAML==6.0.2",
+                    "pydantic==2.11.7",
+                    tikTokenInstall,
                     pillowInstall,
                     shapelyInstall,
-                    "scikit_build_core==0.11.1",
-                    "python-dotenv==0.21.0",
-                    "tqdm==4.66.4",
-                    "networkx==2.8.8",
-                    "imageio==2.22.4",
-                    "tifffile==2022.10.10",
-                    "packaging==24.1",
-                    pandasInstall
-                    // "pandas==2.2.2",
-                    // "paddleocr<=3.1.0"
-                    // paddleOcrInstall
-
-                    // leave comments
-                    //            "--prefer-binary",
-                    //            "cython",
-                    //            "numpy==1.26.4",
-                    //            "python-dotenv>=0.21.0",
-                    //            "tqdm>=4.66.4",
-                    //            "pillow<=11.2.1",
-                    //            "paddlepaddle==3.0.0",
-                    //            "paddleocr==2.7.0.3", // Known working version with Python 3.9+ and minimal deps
+                    skitLearnInstall,
+                    pandasInstall,
+                    sciPyInstall,
+                    paddlePaddleInstall,
+                    paddleOcrInstall,
+                    paddleXInstall,
                  )
                 )
 }
@@ -157,9 +61,11 @@ repositories {
 dependencies {
     compileOnly("io.micronaut:micronaut-http-client")
 
+    implementation("org.graalvm.polyglot:polyglot:24.2.1")
+    implementation("org.graalvm.polyglot:python:24.2.1")
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("io.micronaut.graal-languages:micronaut-graalpy:1.2.0")
+    implementation("io.micronaut.graal-languages:micronaut-graalpy")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
 
     runtimeOnly("org.yaml:snakeyaml")
@@ -177,12 +83,6 @@ dependencies {
 
 application {
     mainClass.set("com.nameplate.Application")
-    applicationDefaultJvmArgs = listOf(
-            "-Dpolyglot.engine.WarnInterpreterOnly=false",
-            "-Dpolyglot.log.file=Log/truffle.log",
-            "--enable-native-access=org.graalvm.truffle",
-            "-Dpolyglot.engine.WarnVirtualThreadSupport=false"
-                                      )
 }
 
 java {
@@ -205,7 +105,9 @@ micronaut {
     aot {
         configFile = file("gradle/micronaut-aot.properties")
     }
-} // END Micronaut ***********************************************************************************************************
+}
+
+// END Micronaut ***********************************************************************************************************
 // *************************************************************************************************************************
 
 
@@ -241,7 +143,9 @@ graalvmNative {
             })
         }
     }
-} // END GraalVM options ****************************************************************************************************
+}
+
+// END GraalVM options ****************************************************************************************************
 // *************************************************************************************************************************
 
 
@@ -253,44 +157,70 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfi
     graalImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
     baseImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
     exposedPorts.set(setOf(8181))
-} // END Dockerfile.graalpy-vfs **********************************************************************************************************
+}
+
+// END Dockerfile.graalpy-vfs **********************************************************************************************************
 // *************************************************************************************************************************
 
 
 //*************************************************************************************************************************
 // Python Resource Folder Management **************************************************************************************
 
+tasks.register<Copy>("copyVenvResources") {
+    group = "python"
+    description = "Copies GraalPy venv resources from build directory to .venv"
+    dependsOn("graalPyResources")
+
+    from("build/generated/graalpy/resources/org.graalvm.python.vfs/venv") {
+        include("**/*")
+    }
+    into(layout.projectDirectory.dir(".venv"))
+
+    doLast {
+        println("Copied GraalPy venv resources to .venv directory")
+    }
+}
+
+tasks.named("graalPyResources") {
+    finalizedBy("copyVenvResources")
+}
+
+
 // This explicitly tells Gradle that processResources and processTestResources tasks depend on the graalPyResources task, ensuring proper task ordering.
 
-/* tasks.named("processResources") {
-     dependsOn("graalPyResources")
- }
- tasks.named("processTestResources") {
-     dependsOn("graalPyResources")
- }
+// tasks.named("processResources") {
+//     dependsOn("graalPyResources")
+// }
+// tasks.named("processTestResources") {
+//     dependsOn("graalPyResources")
+// }
+//
+// tasks.named("test") {
+//     dependsOn("graalPyResources")
+// }
 
- tasks.named("test") {
-     dependsOn("graalPyResources")
- }*/
 
 // This tells Gradle to include duplicate resources rather than failing the build when it encounters them.
 
-/* tasks.withType<ProcessResources> {
-     duplicatesStrategy = DuplicatesStrategy.INCLUDE
- }
+// tasks.withType<ProcessResources> {
+//     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+// }
+//
+// sourceSets {
+//     main {
+//         resources {
+//             // Make sure main resources include the custom GraalPy VFS
+//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
+//         }
+//     }
+//     test {
+//         resources {
+//             // And your tests include it too
+//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
+//         }
+//     }
+// }
 
- sourceSets {
-     main {
-         resources {
-             srcDir("org.graalvm.python.vfs")
-         }
-     }
-     test {
-         resources {
-             srcDir("org.graalvm.python.vfs")
-         }
-     }
- }*/
 
 // END Python Resource Folder Management **********************************************************************************
 //*************************************************************************************************************************

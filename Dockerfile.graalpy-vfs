@@ -1,5 +1,6 @@
 # --- Stage 1: Build VFS Resources ---
-FROM container-registry.oracle.com/graalvm/native-image:24.0.1 AS builder
+FROM --platform=linux/arm64 ghcr.io/graalvm/jdk-community:24 AS builder
+#FROM container-registry.oracle.com/graalvm/native-image:24.0.1 AS builder
 
 WORKDIR /app
 
@@ -8,10 +9,6 @@ RUN echo "== Platform Info ==" \
     && uname -m \
     && uname -a \
     && cat /etc/os-release
-
-# Debug GraalVM installation
-RUN echo "JAVA_HOME=$JAVA_HOME" && \
-    java -version
 
 # Install CPython and build tools needed for Python packages
 RUN microdnf install -y \

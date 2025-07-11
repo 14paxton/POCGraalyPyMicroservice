@@ -28,6 +28,8 @@ wheels/
 *.json
 !requirements.txt
 !package.json
+vfs-output
+.venv
 
 # IDE
 logs
@@ -38,3 +40,4 @@ logs
 *.swp
 *.swo
 .DS_Store
+/buildSrc/.kotlin/

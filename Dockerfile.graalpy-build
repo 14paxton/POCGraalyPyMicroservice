@@ -1,0 +1,40 @@
+# Builder stage: generate GraalPy resources
+FROM --platform=linux/arm64 ghcr.io/graalvm/graalvm-community AS builder
+WORKDIR /app
+
+# Install system tools and GraalPy runtime
+RUN  microdnf install -y libjpeg-turbo-devel
+
+# Copy only Gradle build files first to leverage caching
+COPY gradlew ./
+COPY gradle/wrapper/ gradle/wrapper/
+COPY gradle/ gradle/
+COPY settings.gradle.kts build.gradle.kts gradle.properties ./
+
+RUN chmod +x gradlew
+
+# Pre-fetch Gradle dependencies (cached layer, with optional persistent cache)
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon dependencies
+
+# Copy application source code
+COPY src/ src/
+COPY python-resources/ python-resources/
+RUN chmod -R go+r src/
+
+# Run the GraalPy resource generation task
+RUN ./gradlew clean graalPyResources
+
+# (Optional) Final stage: export only the generated resources for minimal artifact
+FROM alpine:latest AS resources
+COPY --from=builder /app/build/generated/graalpy/resources /resources
+CMD ["sh"]
+
+
+
+#docker build --target builder -t graalpy-venv .
+#docker create --name graalpy-venv-container graalpy-venv
+#docker cp graalpy-venv-container:/resources ./vfs-output
+#docker rm graalpy-venv-container
+
+#docker create --name graalpy-venv-container graalpy-venv && docker cp graalpy-venv-container:/app/build/generated/graalpy/resources ./vfs-output && docker rm graalpy-venv-container
