@@ -11,7 +11,7 @@ private val OS_FAMILY_MAP: Map<String, String> = mapOf(
 object PipInstall {
   private val currentOS = DefaultNativePlatform.getCurrentOperatingSystem()
   private val OS_SPECIFIC_PACKAGE_DIR = OS_FAMILY_MAP.getValue(currentOS.toFamilyName())
-  private const val ANY_OS_PACKAGE_DIR = "python-resources/any/"
+  private const val ANY_OS_PACKAGE_DIR = "python-resources/Any/"
 
   enum class PackageName(val fallback: String) {
     NUMPY("numpy>=2.3.1"),
