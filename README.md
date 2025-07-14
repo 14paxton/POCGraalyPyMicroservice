@@ -30,42 +30,11 @@
    ```
 3) with Gradle wrapper, no need to install anything else, wouldn't necessarily need python installed either
 
-## MacOs
-
-```shell
-brew install jpeg;
-brew install libtiff libjpeg libpng freetype;
-brew install pkg-config;
-```
-
 # Adding Python Files
 
 - Raw .py files can be placed `resources/org.graalvm.python.vfs/src/`
 - Create a java module and use annotation `@GraalPyModule("hello")`
 - example `hello.py` -> `HelloModule.java` -> `HelloController.java`
-
-## Adding wheels .whl
-
-> if trouble installing, sometimes need download wheel directly
-
-- `python-resources` has `.whl` files `PipInstall.ks` kotlin script for choosing based on OS
-
-### Naming Convention
-
-- example : `paddlepaddle-3.0.0-graalpy311-graalpy242_311_native-macosx_14_0_arm64.whl`
-
-- paddlepaddle: package name
-- 3.0.0: version
-- graalpy311: Python 3.11 for GraalPy
-- graalpy242_311_native: GraalPy 24.2, Python 3.11, native build
-- macosx_14_0_arm64: macOS 14.0 ARM64 platform
-- Why use this convention?
-- GraalPy is not binary-compatible with CPython, so wheels built for CPython may not work.
-- The naming helps pip and GraalPy identify compatible wheels and avoid installation errors.
-
-- Summary:
-
-> Use the GraalPy naming convention for wheels to ensure they are recognized as compatible with the GraalPy runtime and your specific platform.
 
 # Build
 

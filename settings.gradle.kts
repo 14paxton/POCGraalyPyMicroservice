@@ -5,10 +5,5 @@ pluginManagement {
 }
 
 
-rootProject.name = "nameplate-data-logger"
+rootProject.name="nameplate-data-logger"
 
-buildCache {
-    local {
-        isEnabled = true
-    }
-}

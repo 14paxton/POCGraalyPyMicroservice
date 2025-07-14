@@ -1,50 +1,32 @@
-import PipInstall.PackageName
-import PipInstall.PackageName.*
-import PipInstall.getPackageBinary
-import PipInstall.wheelOsStandard
-
-val numpyInstall = getPackageBinary(rootDir, NUMPY)
-val paddlePaddleInstall = getPackageBinary(rootDir, PADDLEPADDLE)
-val paddleOcrInstall = getPackageBinary(rootDir, PADDLEOCR)
-val paddleXInstall = getPackageBinary(rootDir, PADDLEX)
-val sciPyInstall = getPackageBinary(rootDir, SCIPY)
-val pandasInstall = getPackageBinary(rootDir, PANDAS)
-val skitLearnInstall = getPackageBinary(rootDir, SKITLEARN)
-val pillowInstall = getPackageBinary(rootDir, PILLOW)
-val shapelyInstall = getPackageBinary(rootDir, SHAPELY)
-val tikTokenInstall = getPackageBinary(rootDir, TIKTOKEN)
-
 plugins {
-    id("io.micronaut.application") version "4.5.4"
+    id("io.micronaut.application") version "4.5.3"
     id("org.graalvm.python") version "24.2.1"
     id("com.gradleup.shadow") version "8.3.6"
     id("io.micronaut.aot") version "4.5.3"
 }
 
-// **************************************************************************************************************************
+/**************************************************************************************************************************
 // PYTHON LIBRARIES Import ***********************************************************************************************
+ *************************************************************************************************************************
+- Python packages and their versions can be specified as if used with pip. Install and pin the numpy package to version 1.26.4.
+- Currently, the support for isolating native modules and loading them multiple times relies on packages built from source on the target system.
+Until this limitation is lifted, we must force the plugins to build numpy from source.
+- The implementation of native module isolation uses platform-specific helper packages at runtime.
+These are selected here depending on the operating system.
+ ****************************************************************************************************************************/
 
 graalPy {
-    packages.set(
-            setOf(
-                    "--prefer-binary",
-                    wheelOsStandard,
-                    numpyInstall,
-                    "python-dotenv==1.1.1",
-                    "tqdm==4.67.1",
-                    "PyYAML==6.0.2",
-                    "pydantic==2.11.7",
-                    tikTokenInstall,
-                    pillowInstall,
-                    shapelyInstall,
-                    skitLearnInstall,
-                    pandasInstall,
-                    sciPyInstall,
-                    paddlePaddleInstall,
-                    paddleOcrInstall,
-                    paddleXInstall,
-                 )
-                )
+    //TODO should set up unique venv for python but can never get to work right,
+    // resourceDirectory.set("GRAALPY-VFS/com/nameplate")
+
+    // packages.set(setOf("--only-binary=:all:", "--prefer-binary", "cython", "pygal", "vader-sentiment==3.2.1.1", "requests", "numpy==1.26.4", "delocate==0.13.0"))
+    packages.set(setOf(
+        "pygal",
+        "cython",
+        "vader-sentiment==3.2.1.1",
+        "requests",
+        "numpy==1.26.4",
+        "delocate==0.13.0"))
 }
 
 // END PYTHON LIBRARIES Import *********************************************************************************************
@@ -61,11 +43,9 @@ repositories {
 dependencies {
     compileOnly("io.micronaut:micronaut-http-client")
 
-    implementation("org.graalvm.polyglot:polyglot:24.2.1")
-    implementation("org.graalvm.polyglot:python:24.2.1")
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("io.micronaut.graal-languages:micronaut-graalpy")
+    implementation("io.micronaut.graal-languages:micronaut-graalpy:1.1.0")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
 
     runtimeOnly("org.yaml:snakeyaml")
@@ -83,6 +63,10 @@ dependencies {
 
 application {
     mainClass.set("com.nameplate.Application")
+    applicationDefaultJvmArgs = listOf("-Dpolyglot.engine.WarnInterpreterOnly=false",
+                                       "-Dpolyglot.log.file=Log/truffle.log",
+                                       "--enable-native-access=org.graalvm.truffle",
+                                       "-Dpolyglot.engine.WarnVirtualThreadSupport=false")
 }
 
 java {
@@ -93,7 +77,6 @@ java {
 
 // ********************************************************************************************************************************
 // Micronaut Gradle Plugin options : https://micronaut-projects.github.io/micronaut-gradle-plugin/latest/#_micronaut_library_plugin
-
 
 micronaut {
     runtime("netty")
@@ -150,7 +133,7 @@ graalvmNative {
 
 
 //*************************************************************************************************************************
-// Dockerfile.graalpy-vfs instructions ************************************************************************************************
+// Dockerfile instructions ************************************************************************************************
 
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfileNative") {
     jdkVersion.set("24")
@@ -159,68 +142,42 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfi
     exposedPorts.set(setOf(8181))
 }
 
-// END Dockerfile.graalpy-vfs **********************************************************************************************************
+// END Dockerfile **********************************************************************************************************
 // *************************************************************************************************************************
 
 
 //*************************************************************************************************************************
 // Python Resource Folder Management **************************************************************************************
 
-tasks.register<Copy>("copyVenvResources") {
-    group = "python"
-    description = "Copies GraalPy venv resources from build directory to .venv"
-    dependsOn("graalPyResources")
-
-    from("build/generated/graalpy/resources/org.graalvm.python.vfs/venv") {
-        include("**/*")
-    }
-    into(layout.projectDirectory.dir(".venv"))
-
-    doLast {
-        println("Copied GraalPy venv resources to .venv directory")
-    }
-}
-
-tasks.named("graalPyResources") {
-    finalizedBy("copyVenvResources")
-}
-
-
 // This explicitly tells Gradle that processResources and processTestResources tasks depend on the graalPyResources task, ensuring proper task ordering.
+tasks.named("processResources") {
+    dependsOn("graalPyResources")
+}
+tasks.named("processTestResources") {
+    dependsOn("graalPyResources")
+}
 
-// tasks.named("processResources") {
-//     dependsOn("graalPyResources")
-// }
-// tasks.named("processTestResources") {
-//     dependsOn("graalPyResources")
-// }
-//
-// tasks.named("test") {
-//     dependsOn("graalPyResources")
-// }
-
+tasks.named("test") {
+    dependsOn("graalPyResources")
+}
 
 // This tells Gradle to include duplicate resources rather than failing the build when it encounters them.
+tasks.withType<ProcessResources> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 
-// tasks.withType<ProcessResources> {
-//     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-// }
-//
-// sourceSets {
-//     main {
-//         resources {
-//             // Make sure main resources include the custom GraalPy VFS
-//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
-//         }
-//     }
-//     test {
-//         resources {
-//             // And your tests include it too
-//             srcDir("${layout.buildDirectory}/generated/graalpy/resources/GRAALPY-VFS/com/nameplate/nameplate-data-logger")
-//         }
-//     }
-// }
-
+sourceSets {
+    main {
+        resources {
+            srcDir("build/generated/graalpy/resources")
+        }
+    }
+    test {
+        resources {
+            srcDir("build/generated/graalpy/resources")
+        }
+    }
+}
 
 // END Python Resource Folder Management **********************************************************************************
 //*************************************************************************************************************************
