@@ -1,6 +1,12 @@
 import org.gradle.nativeplatform.OperatingSystemFamily.*
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.collections.map
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 private val OS_FAMILY_MAP: Map<String, String> = mapOf(
         MACOS to "python-resources/MacOS/",
@@ -26,7 +32,7 @@ object PipInstall {
     TIKTOKEN("tiktoken>=0.9.0");
 
     fun getPackage(rootDir: File): String {
-      return createFileInstall(PackageConfig(getFile(rootDir, OS_SPECIFIC_PACKAGE_DIR, name.lowercase()), fallback))
+      return createFileInstall(PackageConfig(getFile(rootDir.toPath(), OS_SPECIFIC_PACKAGE_DIR, name.lowercase()), fallback))
     }
   }
 
@@ -37,25 +43,32 @@ object PipInstall {
     else                -> "patchelf"
   }
 
-  data class PackageConfig(val path: String, val fallback: String)
+  private data class PackageConfig(val path: String, val fallback: String)
 
-  private fun findMatchingFile(directory: File, prefix: String): File? {
-    return directory.listFiles()
-            ?.firstOrNull { it.name.startsWith(prefix) }
+  private fun findMatchingFile(directory: Path, prefix: String): Path? {
+    return if (directory.exists()) {
+      directory.listDirectoryEntries()
+              .firstOrNull { it.name.startsWith(prefix) }
+    } else null
   }
 
-  private fun getFile(rootDir: File, pathFromRoot: String, pkgNameContains: String): String {
-    val dir = File(rootDir, pathFromRoot)
-    val anyOsDir = File(rootDir, ANY_OS_PACKAGE_DIR)
+  private fun getFile(rootDir: Path, pathFromRoot: String, pkgNameContains: String): String {
+    val dir = rootDir.resolve(pathFromRoot)
+    val anyOsDir = rootDir.resolve(ANY_OS_PACKAGE_DIR)
 
     val pkgFile = findMatchingFile(dir, pkgNameContains) ?: findMatchingFile(anyOsDir, pkgNameContains)
 
-    return pkgFile?.absolutePath ?: ""
+    return pkgFile?.toString() ?: ""
   }
 
   private fun createFileInstall(packageConfig: PackageConfig): String {
-    return packageConfig.path.takeIf { it.isNotBlank() && File(it).exists() }
+    return packageConfig.path.takeIf { it.isNotBlank() && Paths.get(it).exists() }
                    ?.let { "file://$it" } ?: packageConfig.fallback
+  }
+
+  fun resolvePackages(rootDir: File, packages: List<PackageName>): Set<String> {
+    return packages.map { it.getPackage(rootDir) }
+            .toSet()
   }
 
 }

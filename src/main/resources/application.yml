@@ -5,7 +5,6 @@ micronaut:
   application:
     name: nameplate-data-logger
 
-jvm:
-  systemProperty:
-    polyglot.log.file: logs/graalpy.log
-    polyglot.engine.WarnVirtualThreadSupport: false
+graalpy:
+  vfs:
+    resource-directory: "GRAALPY-VFS/com.nameplate.nameplate-data-logger"

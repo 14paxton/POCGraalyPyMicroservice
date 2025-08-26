@@ -24,7 +24,7 @@
 
     <!-- Root logger configuration -->
     <root level="info">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="DEBUG"/>
     </root>
 
     <!-- Enable DEBUG logging for your application's packages -->

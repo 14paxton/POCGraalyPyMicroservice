@@ -1,96 +1,77 @@
-import PipInstall.PackageName.*
-import PipInstall.wheelOsStandard
-
-val graalPythonVersion: String by project
-
-val paddlePaddleInstall = PADDLEPADDLE.getPackage(rootDir)
-val paddleOcrInstall = PADDLEOCR.getPackage(rootDir)
-val sciPyInstall = SCIPY.getPackage(rootDir)
-val pandasInstall = PANDAS.getPackage(rootDir)
-val sciKitLearnInstall = SCIKIT_LEARN.getPackage(rootDir)
-val shapelyInstall = SHAPELY.getPackage(rootDir)
-val tikTokenInstall = TIKTOKEN.getPackage(rootDir)
-
 plugins {
-  id("io.micronaut.application") version "4.5.4"
-  id("org.graalvm.python") version "24.2.1"
-  id("com.gradleup.shadow") version "8.3.8"
-  id("io.micronaut.aot") version "4.5.3"
+  id("io.micronaut.application")
+  id("com.gradleup.shadow")
+  id("io.micronaut.aot")
+  id("org.jetbrains.kotlin.jvm")
+  id("org.graalvm.python")
 }
 
-group = "com.nameplate"
+// *************************************************************************************************************************************
+// Version Variables *******************************************************************************************************************
+
+val graalPythonVersion: String by project
+val graalVersion: String by project
+val port: String by project
+val jvmVersion: String by project
+
+val javaVersion: JavaVersion = JavaVersion.toVersion(jvmVersion)
+val javaLanguageVersion: JavaLanguageVersion = JavaLanguageVersion.of(jvmVersion)
+val graalJvmVendor: JvmVendorSpec = JvmVendorSpec.GRAAL_VM
+
+val groupName = "com.nameplate"
+val mainClassName = "$groupName.Application"
+val resourceFileLocation = "GRAALPY-VFS/$groupName.${rootProject.name}"
+
+// END Version Variables ***************************************************************************************************************
+// *************************************************************************************************************************************
+
+group = groupName
 version = "0.1"
 
 repositories {
-  mavenLocal()
   mavenCentral()
+  mavenLocal()
 }
 
 application {
-  mainClass.set("com.nameplate.Application")
+  mainClass.set(mainClassName)
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_24
-  targetCompatibility = JavaVersion.VERSION_24
+  sourceCompatibility = javaVersion
+  targetCompatibility = javaVersion
+  toolchain {
+    languageVersion.set(javaLanguageVersion)
+    vendor.set(graalJvmVendor)
+  }
 }
-
-
-// *************************************************************************************************************************************
-// PYTHON LIBRARIES Import *************************************************************************************************************
-
-graalPy {
-
-  // resourceDirectory.set("GRAALPY-VFS/com/nameplate")
-  // resourceDirectory.set("org.graalvm.python.vfs")
-
-  packages.set(
-          setOf(
-                  "--prefer-binary",
-                  wheelOsStandard,
-                  "numpy>=1.26.4",
-                  "python-dotenv>=1.1.1",
-                  "tqdm>=4.67.1",
-                  "PyYAML>=6.0.2",
-                  "pydantic>=2.11.7",
-                  "pillow",
-                  tikTokenInstall,
-                  shapelyInstall,
-                  sciKitLearnInstall,
-                  pandasInstall,
-                  sciPyInstall,
-                  paddlePaddleInstall,
-                  paddleOcrInstall,
-               )
-              )
-}
-
-// END PYTHON LIBRARIES Import *********************************************************************************************************
-// *************************************************************************************************************************************
 
 
 dependencies {
+
+  // Micronaut implementation
+  implementation("io.micronaut:micronaut-http-server-netty")
+  implementation("io.micronaut.graal-languages:micronaut-graalpy")
+  implementation("io.micronaut.serde:micronaut-serde-jackson")
+  implementation("io.micronaut.views:micronaut-views-thymeleaf")
+
+  // Runtime dependencies
+  runtimeOnly("org.yaml:snakeyaml")
+  runtimeOnly("ch.qos.logback:logback-classic")
+
+  // Test dependencies
+  testImplementation("io.micronaut:micronaut-http-client")
+  testImplementation("io.micronaut.test:micronaut-test-junit5")
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
+  // Annotation processors
+  annotationProcessor("io.micronaut:micronaut-http-validation")
+  annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
   compileOnly("io.micronaut:micronaut-http-client")
 
   implementation("org.graalvm.polyglot:polyglot:$graalPythonVersion")
   implementation("org.graalvm.polyglot:python:$graalPythonVersion")
-
-  implementation("io.micronaut.views:micronaut-views-thymeleaf")
-  implementation("io.micronaut:micronaut-http-server-netty")
-  implementation("io.micronaut.graal-languages:micronaut-graalpy")
-  implementation("io.micronaut.serde:micronaut-serde-jackson")
-
-  runtimeOnly("org.yaml:snakeyaml")
-  runtimeOnly("ch.qos.logback:logback-classic")
-
-  testImplementation("io.micronaut:micronaut-http-client")
-  testImplementation("io.micronaut.test:micronaut-test-junit5")
-  testImplementation("org.junit.jupiter:junit-jupiter-api")
-
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
-  annotationProcessor("io.micronaut:micronaut-http-validation")
-  annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
 }
 
 
@@ -102,7 +83,7 @@ micronaut {
   testRuntime("junit5")
   processing {
     incremental(true)
-    annotations("com.nameplate.*")
+    annotations("$groupName.*")
   }
   aot {
     configFile = file("gradle/micronaut-aot.properties")
@@ -117,34 +98,36 @@ micronaut {
 // GraalVM Gradle Plugin options : https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html ******************************
 
 graalvmNative {
-  toolchainDetection = false
+  toolchainDetection.set(true)
   binaries {
     named("main") {
-      imageName.set("nativeNameplateDataLogger")
-      richOutput.set(true)
-      verbose.set(true)
-      fallback.set(false)
-      mainClass.set("com.nameplate.Application")
-      resources.autodetect()
-      javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(24))
-        vendor.set(JvmVendorSpec.ORACLE)
-      })
+      configureNativeBinary("native-${rootProject.name}", fallbackEnabled = false)
     }
 
     named("optimized") {
-      imageName.set("optimizedNativeNameplateDataLogger")
-      richOutput.set(true)
-      verbose.set(true)
-      resources.autodetect()
-      mainClass.set("com.nameplate.Application")
-      resources.autodetect()
-      javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(24))
-        vendor.set(JvmVendorSpec.ORACLE)
-      })
+      configureNativeBinary("optimized-${rootProject.name}", fallbackEnabled = true)
     }
   }
+}
+
+fun org.graalvm.buildtools.gradle.dsl.NativeImageOptions.configureNativeBinary(imageName: String, fallbackEnabled: Boolean) {
+  println("*** Configuring Native Binary *** $imageName ***")
+
+  this.imageName.set(imageName)
+  richOutput.set(true)
+  verbose.set(true)
+  fallback.set(fallbackEnabled)
+  mainClass.set(mainClassName)
+  resources.autodetect()
+  buildArgs.add("--verbose")
+  buildArgs.add("--initialize-at-build-time=kotlin")
+  buildArgs.add("-march=native")
+  buildArgs.add("-Ob")
+  // jvmArgs.add("-Xmx8g")
+  // javaLauncher.set(javaToolchains.launcherFor {
+  //   languageVersion.set(javaLanguageVersion)
+  //   vendor.set(graalJvmVendor)
+  // })
 }
 
 // END GraalVM options *****************************************************************************************************************
@@ -152,17 +135,21 @@ graalvmNative {
 
 
 // *************************************************************************************************************************************
-// Dockerfile.graalpy-vfs instructions *************************************************************************************************
+// Build Task Modifications *************************************************************************************************
+
+// tasks.named<org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask>("nativeCompile") {
+//
+//   println("*** NativeCompile ***")
+//
+// }
 
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfileNative") {
-  jdkVersion.set("24")
-  graalImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
-  baseImage.set("container-registry.oracle.com/graalvm/native-image:24.0.1")
-  exposedPorts.set(setOf(8181))
+  jdkVersion.set(jvmVersion)
+  graalImage.set("container-registry.oracle.com/graalvm/native-image:$graalVersion")
+  baseImage.set("amazonlinux:2023")
+  exposedPorts.set(setOf(port.toInt()))
+  args("-XX:MaximumHeapSizePercent=80", "-Dio.netty.allocator.numDirectArenas=0", "-Dio.netty.noPreferDirect=true")
 }
-
-// END Dockerfile.graalpy-vfs **********************************************************************************************************
-// *************************************************************************************************************************************
 
 
 tasks.withType<Jar> {
@@ -171,19 +158,68 @@ tasks.withType<Jar> {
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
   isZip64 = true
+  archiveBaseName.set("shadow")
+  archiveVersion.set(version.toString())
+}
+
+// END Build Task Modifications **********************************************************************************************************
+// *************************************************************************************************************************************
+
+
+// *************************************************************************************************************************************
+// PYTHON LIBRARIES Import *************************************************************************************************************
+
+val localPackageInstallPathList: Set<String> = PipInstall.resolvePackages(rootDir,
+                                                                          listOf(PipInstall.PackageName.PADDLEPADDLE,
+                                                                                 PipInstall.PackageName.PADDLEOCR,
+                                                                                 PipInstall.PackageName.SCIPY,
+                                                                                 PipInstall.PackageName.PANDAS,
+                                                                                 PipInstall.PackageName.SCIKIT_LEARN,
+                                                                                 PipInstall.PackageName.SHAPELY,
+                                                                                 PipInstall.PackageName.TIKTOKEN))
+val packagesForPipToPull: Set<String> = setOf("python-dotenv>=1.1.1",
+                                              "tqdm>=4.67.1",
+                                              "PyYAML>=6.0.2",
+                                              "pydantic>=2.11.7",
+                                              "numpy>=1.26.4",
+                                              "pillow>=11.3.0",
+                                              "pygal",
+                                              "vader-sentiment==3.2.1.1",
+                                              "requests")
+
+graalPy {
+  resourceDirectory.set(resourceFileLocation)
+  // resourceDirectory.set("org.graalvm.python.vfs")
+  packages.set(buildSet {
+    add("--prefer-binary")
+    add(PipInstall.wheelOsStandard)
+    addAll(packagesForPipToPull)
+    addAll(localPackageInstallPathList)
+  })
 }
 
 
-//*************************************************************************************************************************
-// Python Resource Folder Management **************************************************************************************
+// END PYTHON LIBRARIES Import *********************************************************************************************************
+// *************************************************************************************************************************************
 
+
+//*************************************************************************************************************************
+// Python Resources For Local .VENV **************************************************************************************
+
+val cleanVenv by tasks.registering(Delete::class) {
+  delete(layout.projectDirectory.dir(".venv"))
+
+  doLast {
+    println("deleted .venv directory")
+  }
+}
 
 tasks.register<Copy>("copyVenvResources") {
   group = "python"
-  description = "Copies GraalPy venv resources from build directory to .venv"
-  dependsOn("graalPyResources")
+  description = "Cleans then copies GraalPy venv resources to .venv"
+  dependsOn("graalPyResources", cleanVenv)
 
-  from("build/generated/graalpy/resources/org.graalvm.python.vfs/venv") {
+  from(layout.buildDirectory.dir("generated/graalpy/resources/$resourceFileLocation/venv")) {
     include("**/*")
   }
   into(layout.projectDirectory.dir(".venv"))
@@ -193,10 +229,18 @@ tasks.register<Copy>("copyVenvResources") {
   }
 }
 
+
 tasks.named("graalPyResources") {
   finalizedBy("copyVenvResources")
 }
 
 
-// END Python Resource Folder Management ***********************************************************************************************
+// END Python Resources For Local .VENV ***********************************************************************************************
 // *************************************************************************************************************************************
+
+
+// *************************************************************************************************************************************
+// Build Performance Optimizations *****************************************************************************************************
+
+// Enable build caching and parallel execution
+gradle.startParameter.isBuildCacheEnabled = true
