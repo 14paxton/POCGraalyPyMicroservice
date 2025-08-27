@@ -1,3 +1,5 @@
+import PipInstall.PackageName.*
+
 plugins {
   id("io.micronaut.application")
   id("com.gradleup.shadow")
@@ -135,7 +137,7 @@ fun org.graalvm.buildtools.gradle.dsl.NativeImageOptions.configureNativeBinary(i
 
 
 // *************************************************************************************************************************************
-// Build Task Modifications *************************************************************************************************
+// Build Task Modifications ************************************************************************************************************
 
 // tasks.named<org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask>("nativeCompile") {
 //
@@ -151,7 +153,6 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("optimizedDockerfi
   args("-XX:MaximumHeapSizePercent=80", "-Dio.netty.allocator.numDirectArenas=0", "-Dio.netty.noPreferDirect=true")
 }
 
-
 tasks.withType<Jar> {
   isZip64 = true
 }
@@ -163,20 +164,20 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 }
 
 // END Build Task Modifications **********************************************************************************************************
-// *************************************************************************************************************************************
+// ***************************************************************************************************************************************
 
 
 // *************************************************************************************************************************************
 // PYTHON LIBRARIES Import *************************************************************************************************************
 
-val localPackageInstallPathList: Set<String> = PipInstall.resolvePackages(rootDir,
-                                                                          listOf(PipInstall.PackageName.PADDLEPADDLE,
-                                                                                 PipInstall.PackageName.PADDLEOCR,
-                                                                                 PipInstall.PackageName.SCIPY,
-                                                                                 PipInstall.PackageName.PANDAS,
-                                                                                 PipInstall.PackageName.SCIKIT_LEARN,
-                                                                                 PipInstall.PackageName.SHAPELY,
-                                                                                 PipInstall.PackageName.TIKTOKEN))
+val localPackageInstallPathList: Set<String> = PipInstall.resolvePackages(rootDir, listOf(PADDLEPADDLE,
+                                                                                          PADDLEOCR,
+                                                                                          SCIPY,
+                                                                                          PANDAS,
+                                                                                          SCIKIT_LEARN,
+                                                                                          SHAPELY,
+                                                                                          TIKTOKEN))
+
 val packagesForPipToPull: Set<String> = setOf("python-dotenv>=1.1.1",
                                               "tqdm>=4.67.1",
                                               "PyYAML>=6.0.2",
@@ -198,13 +199,12 @@ graalPy {
   })
 }
 
-
 // END PYTHON LIBRARIES Import *********************************************************************************************************
 // *************************************************************************************************************************************
 
 
-//*************************************************************************************************************************
-// Python Resources For Local .VENV **************************************************************************************
+//**************************************************************************************************************************************
+// Python Resources For Local .VENV ****************************************************************************************************
 
 val cleanVenv by tasks.registering(Delete::class) {
   delete(layout.projectDirectory.dir(".venv"))
@@ -229,13 +229,11 @@ tasks.register<Copy>("copyVenvResources") {
   }
 }
 
-
 tasks.named("graalPyResources") {
   finalizedBy("copyVenvResources")
 }
 
-
-// END Python Resources For Local .VENV ***********************************************************************************************
+// END Python Resources For Local .VENV ************************************************************************************************
 // *************************************************************************************************************************************
 
 

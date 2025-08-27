@@ -6,10 +6,10 @@ WORKDIR /app
 RUN  microdnf install -y libjpeg-turbo-devel
 
 # Copy only Gradle build files first to leverage caching
-COPY gradlew ./
-COPY gradle/wrapper/ gradle/wrapper/
-COPY gradle/ gradle/
-COPY settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY ../gradlew ./
+COPY ../gradle/wrapper gradle/wrapper/
+COPY ../gradle gradle/
+COPY ../settings.gradle.kts build.gradle.kts gradle.properties ./
 
 RUN chmod +x gradlew
 
@@ -18,8 +18,8 @@ RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew --no-daemon dependencies
 
 # Copy application source code
-COPY src/ src/
-COPY python-resources/ python-resources/
+COPY ../src src/
+COPY ../python-resources python-resources/
 RUN chmod -R go+r src/
 
 # Run the GraalPy resource generation task
