@@ -3,12 +3,6 @@
 - > Using Micronaut with java and Gradle with Kotlin created an application that can handle http calls and
   > run Python libraries and code
 
-# Application Endpoints
-
-- [localhost:8181/pygal](http://localhost:8181/pygal )
-- [localhost:8181/hello](http://localhost:8181/hello )
-- [localhost:8181/sentiment](http://localhost:8181/sentiment)
-
 # Install
 
 1) install java GraalVM , if haven't install sdkman
@@ -31,16 +25,16 @@
 
 # Adding Python Files
 
-- Raw `*.py` files can be placed `resources/org.graalvm.python.vfs/src/`
+- Raw `*.py` files can be placed `resources/GRAALPY-VFS/com.nameplate.nameplate-data-logger/src`
 - Create a java module and use annotation `@GraalPyModule("hello")`
 - example `hello.py` -> `HelloModule.java` -> `HelloController.java`
 
 ## Adding wheels .whl
 
-> if trouble installing, sometimes need download wheel directly
+> if trouble installing, sometimes need to download wheel directly
 
 - `python-resources` has `*.whl` files
-- `PipInstall.ks` kotlin script for dynamically choosing files based on OS
+- `buildSrc/src/main/kotlin/PipInstall.kt` kotlin script for dynamically choosing files based on OS
 
 ### Naming Convention When Adding binary `*.whl` files
 
