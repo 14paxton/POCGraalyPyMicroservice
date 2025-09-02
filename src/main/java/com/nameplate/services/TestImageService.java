@@ -1,6 +1,6 @@
 package com.nameplate.services;
 
-import com.nameplate.TestImageModule;
+import com.nameplate.pythonModules.TestImageModule;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 

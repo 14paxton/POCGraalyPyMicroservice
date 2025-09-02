@@ -33,14 +33,12 @@ class TestImageServiceTest {
     String fileName = String.format("test_image_%s.png", date);
     Path testFilePath = testOutputDir.resolve(fileName);
 
-    assertDoesNotThrow(() -> {
-      testImageService.createTestImage(String.valueOf(testFilePath));
-    }, "create_test_image should execute without throwing exceptions");
+    assertDoesNotThrow(() -> testImageService.createTestImage(String.valueOf(testFilePath)),
+                       "create_test_image should execute without throwing exceptions");
 
     boolean fileExists = Files.exists(testFilePath);
     assertTrue(fileExists, "Test file should exist in testOutput directory");
-    
-    Files.deleteIfExists(testFilePath);
+    //    Files.deleteIfExists(testFilePath);
   }
 
 }

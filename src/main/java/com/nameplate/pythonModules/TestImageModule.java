@@ -1,4 +1,4 @@
-package com.nameplate;
+package com.nameplate.pythonModules;
 
 import io.micronaut.graal.graalpy.annotations.GraalPyModule;
 
