@@ -177,8 +177,7 @@ val localPackageInstallPathList: Set<String> = PipInstall.resolvePackages(rootDi
                                                                                           SCIKIT_LEARN,
                                                                                           SHAPELY,
                                                                                           TIKTOKEN,
-                                                                                          OPENCV,
-                                                                                          PADDLEX))
+                                                                                          OPENCV))
 
 val packagesForPipToPull: Set<String> = setOf("python-dotenv>=1.1.1",
                                               "tqdm>=4.67.1",
@@ -186,13 +185,14 @@ val packagesForPipToPull: Set<String> = setOf("python-dotenv>=1.1.1",
                                               "pydantic>=2.11.7",
                                               "numpy>=1.26.4",
                                               "pillow>=11.3.0",
-                                              "pygal",
+                                              "pygal>=3.0.5",
                                               "vader-sentiment==3.2.1.1",
-                                              "requests")
+                                              "requests>=2.26.0")
 
 graalPy {
-    resourceDirectory.set(resourceFileLocation)
+    // Default Resource Directory
     // resourceDirectory.set("org.graalvm.python.vfs")
+    resourceDirectory.set(resourceFileLocation)
     packages.set(buildSet {
         add("--prefer-binary")
         add(PipInstall.wheelOsStandard)
@@ -243,4 +243,6 @@ tasks.named("graalPyResources") {
 // Build Performance Optimizations *****************************************************************************************************
 
 // Enable build caching and parallel execution
-gradle.startParameter.isBuildCacheEnabled = true
+// cache stored ~/.gradle/caches/build-cache-<version>/
+// /Users/leroy/Library/Caches/pip-graalpy
+// gradle.startParameter.isBuildCacheEnabled = true
