@@ -17,11 +17,25 @@
 ## MacOs
 
 - May need for some libraries
-    ```shell
-        brew install jpeg;
-        brew install libtiff libjpeg libpng freetype;
-        brew install pkg-config;
-    ```
+```shell
+# Most common error
+brew install opencv
+
+# Core build tools for native compilation
+brew install cmake ninja pkg-config
+
+# Image libraries that OpenCV needs
+brew install jpeg libtiff libjpeg libpng freetype
+
+# Additional dependencies that might be needed
+brew install openblas lapack eigen llvm
+
+# Python build tools
+brew install python-setuptools
+
+# For M3 Mac specifically, ensure Xcode command line tools are updated
+xcode-select --install
+```
 
 # Adding Python Files
 
