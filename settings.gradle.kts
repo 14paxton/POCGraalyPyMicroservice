@@ -16,6 +16,10 @@ plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+// Enable build caching and parallel execution
+// cache stored ~/.gradle/caches/build-cache-<version>/
+// ~/Library/Caches/pip-graalpy
+gradle.startParameter.isBuildCacheEnabled = true
 
 rootProject.name = "nameplate-data-logger"
 

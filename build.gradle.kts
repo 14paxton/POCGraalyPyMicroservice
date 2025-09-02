@@ -237,12 +237,3 @@ tasks.named("graalPyResources") {
 
 // END Python Resources For Local .VENV ************************************************************************************************
 // *************************************************************************************************************************************
-
-
-// *************************************************************************************************************************************
-// Build Performance Optimizations *****************************************************************************************************
-
-// Enable build caching and parallel execution
-// cache stored ~/.gradle/caches/build-cache-<version>/
-// /Users/leroy/Library/Caches/pip-graalpy
-// gradle.startParameter.isBuildCacheEnabled = true
