@@ -17,6 +17,7 @@
 ## MacOs
 
 - May need for some libraries
+
 ```shell
 # Most common error
 brew install opencv
@@ -39,7 +40,7 @@ xcode-select --install
 
 # Adding Python Files
 
-- Raw `*.py` files can be placed `resources/GRAALPY-VFS/com.nameplate.nameplate-data-logger/src`
+- Raw `*.py` files can be placed `resources/GRAALPY-VFS/com.nameplate.nameplate-data-logger/src` default resource folder if not set ```resources/org.graalvm.python.vfs```
 - Create a java module and use annotation `@GraalPyModule("hello")`
 - example `hello.py` -> `HelloModule.java` -> `HelloController.java`
 
@@ -74,9 +75,29 @@ xcode-select --install
 
 ## Option 1: Global Configuration (Recommended)
 
-- Create a CustomGraalPyContextBuilderFactory to set the VFS resource directory globally:
+1. create directory for resources ```resources/GRAALPY-VFS/com.nameplate.nameplate-data-logger/src```
+2. set location in build
+    ```kotlin
+      val groupName = "com.nameplate"
+      val resourceFileLocation = "GRAALPY-VFS/$groupName.${rootProject.name}"
+      graalPy {
+          resourceDirectory.set(resourceFileLocation)
+   
+          // The Default Resource Directory If Not Set resources/org.graalvm.python.vfs/src
+          // resourceDirectory.set("org.graalvm.python.vfs")
+      }
+    ```
+3. Create a CustomGraalPyContextBuilderFactory to set the VFS resource directory globally:
 
-> - Example: `java/com/skeleton/CustomGraalPyContextBuilderFactory.java`
+- > Example: `java/com/skeleton/CustomGraalPyContextBuilderFactory.java`
+
+# Clean
+
+```shell
+# clean caches
+rm -fr ~/.gradle/caches/
+rm -fr ~/Library/Caches/pip-graalpy
+```
 
 # Build
 
