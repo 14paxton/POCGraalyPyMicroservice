@@ -8,7 +8,7 @@ pluginManagement {
     id("com.gradleup.shadow") version "8.3.8"
     id("io.micronaut.aot") version "4.5.3"
     id("org.jetbrains.kotlin.jvm") version "2.2.20"
-    id("org.graalvm.python") version "24.2.2"
+    id("org.graalvm.python") version "25.0.0"
   }
 }
 

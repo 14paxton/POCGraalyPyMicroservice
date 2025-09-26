@@ -1,4 +1,6 @@
-import org.gradle.nativeplatform.OperatingSystemFamily.*
+import org.gradle.nativeplatform.OperatingSystemFamily.LINUX
+import org.gradle.nativeplatform.OperatingSystemFamily.MACOS
+import org.gradle.nativeplatform.OperatingSystemFamily.WINDOWS
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import java.io.File
 import java.nio.file.Path
@@ -7,9 +9,11 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
-private val OS_FAMILY_MAP: Map<String, String> = mapOf(MACOS to "python-resources/MacOS/",
-                                                       LINUX to "python-resources/Linux/",
-                                                       WINDOWS to "python-resources/Windows/")
+private val OS_FAMILY_MAP: Map<String, String> = mapOf(
+  MACOS to "python-resources/MacOS/",
+  LINUX to "python-resources/Linux/",
+  WINDOWS to "python-resources/Windows/"
+)
 
 object PipInstall {
   private val currentOS = DefaultNativePlatform.getCurrentOperatingSystem()
@@ -29,26 +33,24 @@ object PipInstall {
     TIKTOKEN("tiktoken>=0.9.0"),
     OPENCV("opencv-contrib-python==4.10.0.84");
 
-    fun getPackage(rootDir: File): String {
-      return createFileInstall(PackageConfig(getFile(rootDir.toPath(), OS_SPECIFIC_PACKAGE_DIR, name.lowercase()), fallback))
-    }
+    fun getPackage(rootDir: File): String = createFileInstall(PackageConfig(getFile(rootDir.toPath(), OS_SPECIFIC_PACKAGE_DIR, name.lowercase()), fallback))
   }
 
   val wheelOsStandard: String = when {
-    currentOS.isLinux   -> "patchelf"
-    currentOS.isMacOsX  -> "delocate"
+    currentOS.isLinux -> "patchelf"
+    currentOS.isMacOsX -> "delocate"
     currentOS.isWindows -> "delvewheel"
-    else                -> "patchelf"
+    else -> "patchelf"
   }
 
   private data class PackageConfig(val path: String, val fallback: String)
 
-  private fun findMatchingFile(directory: Path, prefix: String): Path? {
-    return if (directory.exists()) {
-      directory.listDirectoryEntries()
-        .firstOrNull { it.name.startsWith(prefix) }
-    }
-    else null
+  private fun findMatchingFile(directory: Path, prefix: String): Path? = if (directory.exists()) {
+    directory.listDirectoryEntries()
+      .firstOrNull { it.name.startsWith(prefix) }
+  }
+  else {
+    null
   }
 
   private fun getFile(rootDir: Path, pathFromRoot: String, pkgNameContains: String): String {
@@ -60,17 +62,13 @@ object PipInstall {
     return pkgFile?.toString() ?: ""
   }
 
-  private fun createFileInstall(packageConfig: PackageConfig): String {
-    return packageConfig.path.takeIf {
-      it.isNotBlank() && Paths.get(it)
+  private fun createFileInstall(packageConfig: PackageConfig): String = packageConfig.path.takeIf {
+    it.isNotBlank() &&
+      Paths.get(it)
         .exists()
-    }
-      ?.let { "file://$it" } ?: packageConfig.fallback
   }
+    ?.let { "file://$it" } ?: packageConfig.fallback
 
-  fun resolvePackages(rootDir: File, packages: List<PackageName>): Set<String> {
-    return packages.map { it.getPackage(rootDir) }
-      .toSet()
-  }
-
+  fun resolvePackages(rootDir: File, packages: List<PackageName>): Set<String> = packages.map { it.getPackage(rootDir) }
+    .toSet()
 }

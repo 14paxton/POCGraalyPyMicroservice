@@ -7,15 +7,12 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
 import org.graalvm.python.embedding.GraalPyResources;
 import org.graalvm.python.embedding.VirtualFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @io.micronaut.context.annotation.Context
 @Replaces(GraalPyContextBuilderFactory.class)
 public class CustomGraalPyContextBuilderFactory implements GraalPyContextBuilderFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(CustomGraalPyContextBuilderFactory.class);
-  private final VirtualFileSystem vfs;
   private final static Engine engine = Engine.create();
+  private final VirtualFileSystem vfs;
 
 
   public CustomGraalPyContextBuilderFactory(@Value("${graalpy.vfs.resource-directory}") String resourceDirectory) {
@@ -35,7 +32,6 @@ public class CustomGraalPyContextBuilderFactory implements GraalPyContextBuilder
                            .allowCreateThread(true)
                            .useSystemExit(true)
                            .option("python.VerboseFlag", "false")
-                           .option("python.NativeModules", "true")
                            .option("python.IsolateNativeModules", "false");
   }
 }

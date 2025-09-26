@@ -38,7 +38,7 @@ class TestImageServiceTest {
 
     boolean fileExists = Files.exists(testFilePath);
     assertTrue(fileExists, "Test file should exist in testOutput directory");
-    //    Files.deleteIfExists(testFilePath);
+    Files.deleteIfExists(testFilePath);
   }
 
 }
