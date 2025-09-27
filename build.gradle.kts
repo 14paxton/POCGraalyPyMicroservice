@@ -208,7 +208,7 @@ graalPy {
       add("--prefer-binary")
       add(PipInstall.wheelOsStandard)
       addAll(packagesForPipToPull)
-      // addAll(localPackageInstallPathList)
+      addAll(localPackageInstallPathList)
     }
   )
 }
